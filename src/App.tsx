@@ -170,6 +170,11 @@ function pickQuestionIds() {
   return ids.slice(0, QUESTION_COUNT)
 }
 
+function detectBrowserLanguage(): Language {
+  const browserLanguages = navigator.languages?.length ? navigator.languages : [navigator.language]
+  return browserLanguages.some((value) => value.toLowerCase().startsWith('zh')) ? 'zh' : 'en'
+}
+
 function encodeChallenge(value: Challenge) {
   const bytes = new TextEncoder().encode(JSON.stringify(value))
   let binary = ''
@@ -467,7 +472,12 @@ export default function App() {
   const incident = useMemo(makeIncident, [])
   const initialChallenge = useMemo(() => decodeChallenge(new URLSearchParams(window.location.search).get('challenge')), [])
   const [screen, setScreen] = useState<Screen>(initialChallenge ? 'quiz' : 'home')
-  const [language, setLanguage] = useState<Language>(() => initialChallenge?.language || (localStorage.getItem('wdf-language') === 'zh' ? 'zh' : 'en'))
+  const [language, setLanguage] = useState<Language>(() => {
+    if (initialChallenge?.language) return initialChallenge.language
+    const savedPreference = localStorage.getItem('wdf-language-preference')
+    if (savedPreference === 'zh' || savedPreference === 'en') return savedPreference
+    return detectBrowserLanguage()
+  })
   const [muted, setMuted] = useState(false)
   const [challenge] = useState<Challenge | null>(initialChallenge)
   const [creator, setCreator] = useState<Challenge | null>(null)
@@ -485,8 +495,15 @@ export default function App() {
   useEffect(() => {
     document.documentElement.lang = language === 'zh' ? 'zh-CN' : 'en'
     document.title = language === 'zh' ? '谁会先死？— 多元宇宙生存测试' : 'Who Dies First? — A Multiverse Survival Test'
-    localStorage.setItem('wdf-language', language)
   }, [language])
+
+  function toggleLanguage() {
+    setLanguage((currentLanguage) => {
+      const nextLanguage = currentLanguage === 'en' ? 'zh' : 'en'
+      localStorage.setItem('wdf-language-preference', nextLanguage)
+      return nextLanguage
+    })
+  }
 
   function beep() {
     if (muted) return
@@ -593,7 +610,7 @@ export default function App() {
 
   return (
     <div className="app-shell" data-language={language}>
-      <Header muted={muted} language={language} t={t} onToggleLanguage={() => setLanguage((value) => value === 'en' ? 'zh' : 'en')} onToggleAudio={() => setMuted((value) => !value)} onHome={reset} incident={challenge?.incident || incident} />
+      <Header muted={muted} language={language} t={t} onToggleLanguage={toggleLanguage} onToggleAudio={() => setMuted((value) => !value)} onHome={reset} incident={challenge?.incident || incident} />
       <SideRail incident={challenge?.incident || incident} t={t} outcome={screen === 'result' ? t.final : t.unknown} />
       {screen === 'home' && <Home t={t} onStart={() => { beep(); setScreen('quiz') }} />}
       {screen === 'quiz' && <Quiz challenger={challenge} language={language} t={t} onComplete={completeQuiz} />}
