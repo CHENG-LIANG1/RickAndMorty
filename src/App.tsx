@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type FormEvent } from 'react'
 
 type Screen = 'home' | 'quiz' | 'invite' | 'loading' | 'result'
 type Language = 'en' | 'zh'
@@ -101,7 +101,7 @@ const copy = {
       { title: ['SEND IT', 'TO A FRIEND'], body: 'They answer the exact same ten questions.' },
       { title: ['SEE WHO', 'DIES FIRST'], body: 'One result. Permanent bragging rights.' },
     ],
-    openedPortal: 'OPENED A PORTAL.', identify: 'IDENTIFY THE SUBJECT.', yourName: 'YOUR NAME', enterName: 'ENTER NAME', chooseHero: 'CHOOSE YOUR HERO', question: 'Question', decision: 'DECISION', unlock: 'ENTER YOUR NAME AND CHOOSE A HERO TO UNLOCK THE CONTROLS.',
+    openedPortal: 'OPENED A PORTAL.', identify: 'CHOOSE YOUR HERO.', yourName: 'YOUR NAME', enterName: 'ENTER NAME', chooseHero: 'CHOOSE YOUR HERO', question: 'Question', decision: 'DECISION', unlock: 'CHOOSE A HERO TO UNLOCK THE CONTROLS.', finishTitle: 'TEN BAD DECISIONS. ONE LAST DETAIL.', finishBody: 'Sign the incident report before we open the portal.', finishAction: 'CONTINUE TO THE VERDICT',
     transmission: 'TRANSMISSION READY // SUBJECT 01:', inviteTitle: ['THE PORTAL NEEDS', 'A SECOND VICTIM.'], inviteBody: 'Send this incident to a friend for the real two-player verdict—or reveal a result right now. They face the same ten decisions.', copied: 'COPIED', copyLink: 'COPY LINK', portalCopied: 'PORTAL COPIED', copyChallenge: 'COPY CHALLENGE', demo: 'REVEAL RESULT NOW', awaiting: ['AWAITING', 'SUBJECT 02'],
     colliding: 'COLLIDING DECISIONS', calculating: ['CALCULATING WHO', 'GETS LEFT BEHIND…'], portalCalibrating: 'Portal calibrating',
     madeIt: 'MADE IT HOME.', didNot: 'DID NOT.', survivor: 'SURVIVOR', casualty: 'CASUALTY', grabbed: 'You grabbed the portal gun.', trusted: 'trusted you.', mistake: 'That was their first mistake.',
@@ -120,7 +120,7 @@ const copy = {
       { title: ['把挑战', '甩给朋友'], body: '让 TA 答同一套题。' },
       { title: ['看谁先', '领盒饭'], body: '输的人负责被笑一整年。' },
     ],
-    openedPortal: '给你挖了个传送门坑。', identify: '先报上名来。', yourName: '怎么称呼你', enterName: '例如：小雷', chooseHero: '选一个主角替你冒险', question: '送命题', decision: '送命题', unlock: '先留名字、选主角，不然墓碑都不知道刻谁。',
+    openedPortal: '给你挖了个传送门坑。', identify: '先选个主角替你挡刀。', yourName: '最后，怎么称呼你', enterName: '例如：小雷', chooseHero: '选一个主角替你冒险', question: '送命题', decision: '送命题', unlock: '先选个主角，不然这题没人替你背锅。', finishTitle: '10 道送命题答完了。', finishBody: '最后留个名字，再生成挑战链接或公布结局。', finishAction: '签字，开启传送门',
     transmission: '传送门已就绪 // 一号倒霉蛋：', inviteTitle: ['还差一个', '冤种朋友。'], inviteBody: '把链接甩给朋友，等 TA 答完同一套 10 道题；不想等，也可以现在直接看结果。', copied: '到手了', copyLink: '复制链接', portalCopied: '链接到手', copyChallenge: '复制挑战链接', demo: '直接看结果', awaiting: ['等待二号', '倒霉蛋'],
     colliding: '正在对比你俩的人性下限', calculating: ['多元宇宙正在决定', '谁先领盒饭……'], portalCalibrating: '传送门正在憋大招',
     madeIt: '苟回来了。', didNot: '先寄了。', survivor: '命硬', casualty: '已寄', grabbed: '你抢到了传送枪。', trusted: '居然信了你。', mistake: '这就是 TA 本局最大的失误。',
@@ -289,10 +289,14 @@ function Quiz({ challenger, onComplete, language, t }: { challenger: Challenge |
   const complete = step === questions.length
 
   function choose(answer: number) {
+    if (!protagonistId) return
+    setAnswers((currentAnswers) => [...currentAnswers, answer])
+  }
+
+  function finishQuiz(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
     if (!name.trim() || !protagonistId) return
-    const next = [...answers, answer]
-    setAnswers(next)
-    if (next.length === questions.length) window.setTimeout(() => onComplete(name.trim(), next, protagonistId, questionIds), 420)
+    onComplete(name.trim(), answers, protagonistId, questionIds)
   }
 
   return (
@@ -300,8 +304,6 @@ function Quiz({ challenger, onComplete, language, t }: { challenger: Challenge |
       <section className="quiz-panel">
         <div className="quiz-intro">
           <span>{challenger ? `${challenger.name.toUpperCase()} ${t.openedPortal}` : t.identify}</span>
-          <label htmlFor="player-name">{t.yourName}</label>
-          <input id="player-name" value={name} onChange={(event) => setName(event.target.value.slice(0, 24))} placeholder={t.enterName} autoFocus autoComplete="off" />
         </div>
         <fieldset className="protagonist-picker">
           <legend>{t.chooseHero}</legend>
@@ -322,11 +324,21 @@ function Quiz({ challenger, onComplete, language, t }: { challenger: Challenge |
             <p className="question-number">{t.decision} {String(step + 1).padStart(2, '0')} / {String(questions.length).padStart(2, '0')}</p>
             <h1>{questions[step].prompt}</h1>
             <div className="answer-grid">
-              <button disabled={!name.trim() || !protagonistId} onClick={() => choose(0)}><small>A</small><span>{questions[step].left}</span><IconArrow /></button>
-              <button disabled={!name.trim() || !protagonistId} onClick={() => choose(1)}><small>B</small><span>{questions[step].right}</span><IconArrow /></button>
+              <button disabled={!protagonistId} onClick={() => choose(0)}><small>A</small><span>{questions[step].left}</span><IconArrow /></button>
+              <button disabled={!protagonistId} onClick={() => choose(1)}><small>B</small><span>{questions[step].right}</span><IconArrow /></button>
             </div>
-            {(!name.trim() || !protagonistId) && <p className="name-warning">{t.unlock}</p>}
+            {!protagonistId && <p className="name-warning">{t.unlock}</p>}
           </div>
+        )}
+        {complete && (
+          <form className="quiz-finish" onSubmit={finishQuiz}>
+            <p className="question-number">{t.final}</p>
+            <h1>{t.finishTitle}</h1>
+            <p>{t.finishBody}</p>
+            <label htmlFor="player-name">{t.yourName}</label>
+            <input id="player-name" value={name} onChange={(event) => setName(event.target.value.slice(0, 24))} placeholder={t.enterName} autoFocus autoComplete="off" />
+            <button className="primary-button" type="submit" disabled={!name.trim()}>{t.finishAction} <IconArrow /></button>
+          </form>
         )}
       </section>
       <div className="quiz-portal" aria-hidden="true"><img src="/portal-machine.png" alt="" /></div>
