@@ -151,7 +151,15 @@ button:focus-visible, input:focus-visible { outline: 4px solid var(--purple); ou
 .quiz-intro label { grid-column: 2; font: 600 10px 'IBM Plex Mono', monospace; }
 .quiz-intro input { grid-column: 2; width: 100%; padding: 10px 0 8px; border: 0; border-bottom: 3px solid var(--ink); background: transparent; font: 800 28px 'Barlow Condensed', sans-serif; text-transform: uppercase; }
 .quiz-intro input::placeholder { color: rgba(17,19,15,.32); }
-.progress-track { display: grid; grid-template-columns: repeat(6, 1fr); margin: 35px 0 72px; }
+.protagonist-picker { margin: 24px 0 0; padding: 0; border: 0; }
+.protagonist-picker legend { margin-bottom: 10px; font: 700 10px 'IBM Plex Mono', monospace; letter-spacing: .08em; }
+.protagonist-picker > div { display: grid; grid-template-columns: repeat(5, minmax(70px, 108px)); gap: 10px; }
+.protagonist-picker button { padding: 0; overflow: hidden; border: 2px solid rgba(17,19,15,.42); background: rgba(237,237,226,.72); cursor: pointer; transition: transform .15s, border-color .15s, background .15s; }
+.protagonist-picker button:hover { transform: translateY(-3px); border-color: var(--ink); }
+.protagonist-picker button.selected { border-color: var(--orange); background: var(--orange); box-shadow: 4px 4px 0 var(--ink); transform: translateY(-3px); }
+.protagonist-picker img { display: block; width: 100%; aspect-ratio: 1.45; object-fit: cover; object-position: center 28%; filter: grayscale(.2) contrast(1.05); }
+.protagonist-picker span { display: block; padding: 6px 4px; font: 700 11px 'IBM Plex Mono', monospace; text-transform: uppercase; }
+.progress-track { display: grid; margin: 28px 0 56px; }
 .progress-track span { border-top: 5px solid rgba(17,19,15,.22); padding-top: 9px; font: 600 11px 'IBM Plex Mono', monospace; }
 .progress-track span.done { border-color: var(--purple); color: var(--purple); }.progress-track span.active { border-color: var(--orange); color: var(--orange); }
 .question-wrap { animation: paper-in .35s ease both; }
@@ -179,6 +187,7 @@ button:focus-visible, input:focus-visible { outline: 4px solid var(--purple); ou
 .invite-portal { background: var(--ink); position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .invite-portal img { width: 720px; max-width: none; transform: translateX(-8%); filter: saturate(.35) contrast(1.15); opacity: .68; }
 .invite-portal span { position: absolute; color: var(--green); font: 700 26px/1.1 'IBM Plex Mono', monospace; text-align: center; animation: blink 1s steps(2) infinite; }
+.invite-actions .text-button { color: var(--purple); border-bottom-color: var(--purple); }
 
 .loading-screen { background: var(--ink); color: var(--paper-light); display: flex; min-height: calc(100vh - 88px); flex-direction: column; align-items: center; justify-content: center; text-align: center; }
 .loading-screen img { position: absolute; width: min(760px, 70vw); opacity: .32; animation: portal-spin 3s linear infinite; }
@@ -232,6 +241,7 @@ button:focus-visible, input:focus-visible { outline: 4px solid var(--purple); ou
 .app-shell[data-language="zh"] .question-number,
 .app-shell[data-language="zh"] .utility-line,
 .app-shell[data-language="zh"] .name-warning { font-family: 'Noto Sans SC', 'PingFang SC', sans-serif; letter-spacing: .04em; }
+.app-shell[data-language="zh"] .protagonist-picker legend { font-family: 'Noto Sans SC', 'PingFang SC', sans-serif; }
 
 @keyframes portal-breathe { 0%,100% { transform: translateX(-3%) scale(1); } 50% { transform: translateX(-3%) scale(1.018); filter: drop-shadow(0 26px 26px rgba(140,255,69,.22)); } }
 @keyframes portal-spin { to { transform: rotate(2deg); } }
@@ -280,7 +290,11 @@ button:focus-visible, input:focus-visible { outline: 4px solid var(--purple); ou
   .quiz-panel { padding: 32px 20px 50px; }
   .quiz-intro { grid-template-columns: 1fr; }
   .quiz-intro label, .quiz-intro input { grid-column: 1; }
+  .protagonist-picker > div { grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .protagonist-picker img { aspect-ratio: 1; }
+  .protagonist-picker span { padding: 5px 2px; font-size: 8px; }
   .progress-track { margin: 28px 0 45px; }
+  .progress-track span { font-size: 8px; }
   .question-wrap h1 { min-height: 0; font-size: 48px; }
   .answer-grid { grid-template-columns: 1fr; margin-top: 34px; }
   .answer-grid button { min-height: 110px; }

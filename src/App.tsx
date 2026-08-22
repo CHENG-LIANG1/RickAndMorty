@@ -8,6 +8,8 @@ type Challenge = {
   answers: number[]
   incident: string
   language?: Language
+  protagonistId?: number
+  questionIds?: number[]
 }
 
 type Character = {
@@ -38,55 +40,92 @@ const questionSets = {
     { prompt: 'Your ship has one escape pod and two passengers.', left: 'Try to repair the ship together.', right: 'The pod now has one passenger.' },
     { prompt: 'A Meeseeks offers to fix your entire life.', left: 'Give it one small, precise task.', right: 'Ask it to make me happy forever.' },
     { prompt: 'The Council of Ricks offers you immunity for one name.', left: 'Say nothing.', right: 'Spell my friend’s name slowly.' },
+    { prompt: 'Interdimensional Cable finds a universe where you are famous.', left: 'Watch one episode and move on.', right: 'Abandon this life immediately.' },
+    { prompt: 'The Cronenberg cure has one tiny warning: “may add tentacles.”', left: 'Read the rest of the label.', right: 'Tentacles sound useful. Inject it.' },
+    { prompt: 'Mr. Poopybutthole says your friend is the parasite.', left: 'Check for a bad memory first.', right: 'Nobody questions Mr. Poopybutthole.' },
+    { prompt: 'You can erase one catastrophic adventure from history.', left: 'Erase the one that hurt people.', right: 'Erase the one where I looked stupid.' },
+    { prompt: 'Rick leaves you alone with a button labeled “DO NOT PRESS.”', left: 'Put a chair over it and leave.', right: 'Labels are just dares with punctuation.' },
+    { prompt: 'A tiny civilization lives inside your car battery.', left: 'Tell them the truth and set them free.', right: 'Free electricity is free electricity.' },
+    { prompt: 'You meet a version of yourself who made every better choice.', left: 'Ask for advice.', right: 'There can only be one of us.' },
+    { prompt: 'The Devil offers you cursed sneakers that make you irresistible.', left: 'Check the curse before trying them on.', right: 'Looking this good is worth one haunting.' },
+    { prompt: 'Birdperson invites you to a wedding that Rick says is “probably a trap.”', left: 'Go, but park near the exit.', right: 'Skip it and send a very convincing gift card.' },
+    { prompt: 'You wake up in a simulation inside another simulation.', left: 'Look for repeatable glitches.', right: 'Act normal until somebody else panics.' },
+    { prompt: 'A facehugger-like alien calls you “Mom.”', left: 'Call Space Animal Control.', right: 'I have always wanted a weird child.' },
+    { prompt: 'The purge starts in five minutes. Your friend forgot a weapon.', left: 'Give them my spare.', right: 'They can carry the snacks.' },
+    { prompt: 'Rick offers to clone you, but the clone keeps your browser history.', left: 'Absolutely not.', right: 'Delete one folder and start the machine.' },
+    { prompt: 'A portal can take you home or to a universe with free pizza forever.', left: 'Home. I know how portals lie.', right: 'Pepperoni dimension, here I come.' },
   ],
   zh: [
-    { prompt: '浴室里突然出现一道传送门。你先拿什么？', left: '毛巾。尊严还是要有的。', right: '传送枪。裤子可有可无。' },
-    { prompt: '寄生虫拥有你和挚友之间所有完美回忆。', left: '问一个只有朋友知道的问题。', right: '先开枪，感情以后再处理。' },
-    { prompt: 'Rick 说发光药剂“应该没事”。', left: '让 Rick 先喝。', right: '喝一半，另一半留给科学。' },
-    { prompt: '飞船只有一个逃生舱，却有两名乘客。', left: '一起留下来修好飞船。', right: '现在逃生舱只有一名乘客了。' },
-    { prompt: 'Meeseeks 愿意帮你彻底解决人生问题。', left: '只交给它一个明确的小任务。', right: '让它保证我永远快乐。' },
-    { prompt: 'Rick 委员会用豁免权换一个名字。', left: '什么都不说。', right: '慢慢拼出朋友的名字。' },
+    { prompt: '你家马桶上突然开了个传送门。第一反应？', left: '先裹条毛巾。社死也是死。', right: '抄起传送枪。裤子哪有冒险重要。' },
+    { prompt: '一个寄生虫拥有你和死党的全部共同回忆。怎么验货？', left: '问一件只有你俩知道的黑历史。', right: '先崩了再说。真朋友会理解的。' },
+    { prompt: 'Rick 指着一管发光液体说：“喝不死，大概。”', left: '让 Rick 先干为敬。', right: '我喝一半，剩下一半留作遗言。' },
+    { prompt: '飞船要炸了，逃生舱只有一个座。你和朋友都在。', left: '一起修。要死也死得有团队精神。', right: '舱门一关，友情到站。' },
+    { prompt: 'Meeseeks 说能帮你解决人生问题。你许什么愿？', left: '只给一个具体小任务，别作死。', right: '让我永远快乐。应该不会出事吧。' },
+    { prompt: 'Rick 委员会说：报一个名字，就放你走。', left: '闭嘴。朋友可以坑，不能卖。', right: '把朋友全名、生日、住址都交代了。' },
+    { prompt: '跨维度电视播到一个你已经成名的宇宙。你会？', left: '看一集爽完就关。做人要知足。', right: '立刻抛弃本宇宙，过去顶替自己。' },
+    { prompt: '克罗南伯格解药写着：“副作用可能长触手。”', left: '先把说明书剩下半页看完。', right: '触手听着就实用，直接扎。' },
+    { prompt: '屎屁屁先生说：你朋友才是寄生虫。信谁？', left: '先找一段不快乐的共同回忆。', right: '屎屁屁先生还能骗我？直接动手。' },
+    { prompt: '你能从历史中删除一次灾难级冒险。删哪次？', left: '删掉伤害无辜路人的那次。', right: '删掉我出丑的那次，必须的。' },
+    { prompt: 'Rick 留你看着一个写着“千万别按”的按钮。', left: '拿椅子压住按钮，离它远点。', right: '都写这么大了，不按多不给面子。' },
+    { prompt: '你的汽车电池里住着一整个微型文明。', left: '告诉他们真相，然后放人。', right: '他们发电，我开车，双赢。大概。' },
+    { prompt: '你遇见了一个每次都选对的平行宇宙自己。', left: '赶紧取经，能抄一点是一点。', right: '世界上不需要两个这么优秀的我。' },
+    { prompt: '恶魔送你一双受诅咒的鞋，穿上人见人爱。', left: '先问清楚到底怎么个诅咒法。', right: '帅都帅了，闹点鬼怎么了。' },
+    { prompt: '鸟人请你参加婚礼，Rick 说：“八成是陷阱。”', left: '去，但车头必须朝着出口。', right: '不去，随个红包证明友情还在。' },
+    { prompt: '你在模拟世界里醒来，发现外面还是一层模拟。', left: '找能稳定复现的系统漏洞。', right: '先装正常，等别人第一个崩溃。' },
+    { prompt: '一只抱脸虫一样的外星生物开口叫你“妈”。', left: '立刻联系银河系流浪动物中心。', right: '来都来了，先养两天看看。' },
+    { prompt: '净化之夜五分钟后开始，朋友没带武器。', left: '把备用武器给 TA，不能真不管。', right: '武器没有，零食袋可以帮我拿。' },
+    { prompt: 'Rick 能克隆你，但克隆体会继承浏览器记录。', left: '这个险不能冒，坚决不克隆。', right: '等我删个文件夹，马上开机。' },
+    { prompt: '传送门一边通往家，一边通往披萨永久免费的宇宙。', left: '回家。免费这两个字最贵。', right: '还想什么，意大利辣香肠宇宙走起。' },
   ],
 } as const
+
+const QUESTION_COUNT = 10
+const protagonistOptions = [
+  { id: 1, name: 'Rick' },
+  { id: 2, name: 'Morty' },
+  { id: 3, name: 'Summer' },
+  { id: 4, name: 'Beth' },
+  { id: 5, name: 'Jerry' },
+] as const
 
 const copy = {
   en: {
     terminal: 'WDF-7 // EVIDENCE TERMINAL', experiment: 'MULTIVERSE SOCIAL EXPERIMENT', incident: 'INCIDENT', audio: 'AUDIO', on: 'ON', off: 'OFF',
     homeAria: 'Go to start', audioOnAria: 'Turn audio on', audioOffAria: 'Turn audio off', languageAria: 'Switch to Chinese',
     log: 'LOG', flight: 'FLT', section: 'SEC', outcome: 'OUTCOME', unknown: 'UNKNOWN', final: 'FINAL',
-    heroTitle: ['YOU BOTH ENTER.', 'ONLY ONE RETURNS.'], heroBody: ['Answer six bad decisions.', 'Send the portal to a friend.', 'Find out who makes it home.'],
-    openPortal: 'OPEN THE PORTAL', howItWorks: 'HOW IT WORKS', noSignup: 'NO SIGN-UP', twoMinutes: '2 MINUTES', oneSurvivor: 'ONE SURVIVOR',
+    heroTitle: ['YOU BOTH ENTER.', 'ONLY ONE RETURNS.'], heroBody: ['A two-player Rick and Morty survival test.', 'Choose a hero, answer ten terrible choices, then send them to a friend.', 'The multiverse decides who dies first.'],
+    openPortal: 'START THE TEST', howItWorks: 'HOW IT WORKS', noSignup: 'NO SIGN-UP', twoMinutes: '2 PLAYERS', oneSurvivor: 'ONE SURVIVOR',
     stability: 'DIMENSIONAL STABILITY', unstable: 'UNSTABLE',
     process: [
-      { title: ['ANSWER SIX', 'BAD DECISIONS'], body: 'Your choices become evidence.' },
-      { title: ['SEND THE PORTAL', 'TO A FRIEND'], body: 'Same incident. Different fate.' },
-      { title: ['FIND OUT WHO', 'MAKES IT HOME'], body: 'One survivor. Probably.' },
+      { title: ['ANSWER TEN', 'BAD DECISIONS'], body: 'Choose a hero and pick what you would actually do.' },
+      { title: ['SEND IT', 'TO A FRIEND'], body: 'They answer the exact same ten questions.' },
+      { title: ['SEE WHO', 'DIES FIRST'], body: 'One result. Permanent bragging rights.' },
     ],
-    openedPortal: 'OPENED A PORTAL.', identify: 'IDENTIFY THE SUBJECT.', yourName: 'YOUR NAME', enterName: 'ENTER NAME', question: 'Question', decision: 'DECISION', unlock: 'ENTER YOUR NAME TO UNLOCK THE CONTROLS.',
-    transmission: 'TRANSMISSION READY // SUBJECT 01:', inviteTitle: ['THE PORTAL NEEDS', 'A SECOND VICTIM.'], inviteBody: 'Send this encrypted incident to a friend. Your result stays sealed until they make all six decisions.', copied: 'COPIED', copyLink: 'COPY LINK', portalCopied: 'PORTAL COPIED', copyChallenge: 'COPY CHALLENGE', demo: 'RUN A DEMO REVEAL', awaiting: ['AWAITING', 'SUBJECT 02'],
+    openedPortal: 'OPENED A PORTAL.', identify: 'IDENTIFY THE SUBJECT.', yourName: 'YOUR NAME', enterName: 'ENTER NAME', chooseHero: 'CHOOSE YOUR HERO', question: 'Question', decision: 'DECISION', unlock: 'ENTER YOUR NAME AND CHOOSE A HERO TO UNLOCK THE CONTROLS.',
+    transmission: 'TRANSMISSION READY // SUBJECT 01:', inviteTitle: ['THE PORTAL NEEDS', 'A SECOND VICTIM.'], inviteBody: 'Send this incident to a friend for the real two-player verdict—or reveal a result right now. They face the same ten decisions.', copied: 'COPIED', copyLink: 'COPY LINK', portalCopied: 'PORTAL COPIED', copyChallenge: 'COPY CHALLENGE', demo: 'REVEAL RESULT NOW', awaiting: ['AWAITING', 'SUBJECT 02'],
     colliding: 'COLLIDING DECISIONS', calculating: ['CALCULATING WHO', 'GETS LEFT BEHIND…'], portalCalibrating: 'Portal calibrating',
     madeIt: 'MADE IT HOME.', didNot: 'DID NOT.', survivor: 'SURVIVOR', casualty: 'CASUALTY', grabbed: 'You grabbed the portal gun.', trusted: 'trusted you.', mistake: 'That was their first mistake.',
     destination: 'DESTINATION', statusLocked: 'STATUS // LOCKED', survivalTime: 'SURVIVAL TIME', minutesSeconds: 'MINUTES // SECONDS', chaosMatch: 'CHAOS MATCH', alignment: 'MULTIVERSE ALIGNMENT',
     challengeAnother: 'CHALLENGE ANOTHER FRIEND', resultCopied: 'RESULT COPIED', copyResult: 'COPY RESULT', rendering: 'RENDERING CARD', downloaded: 'CARD DOWNLOADED', retryDownload: 'TRY DOWNLOAD AGAIN', downloadCard: 'DOWNLOAD CARD', runAgain: 'RUN IT AGAIN',
   },
   zh: {
-    terminal: 'WDF-7 // 事故证据终端', experiment: '多元宇宙社会实验', incident: '事故', audio: '音效', on: '开', off: '关',
+    terminal: 'WDF-7 // 送命记录终端', experiment: '多元宇宙友情质检', incident: '事故', audio: '音效', on: '开', off: '关',
     homeAria: '返回首页', audioOnAria: '开启音效', audioOffAria: '关闭音效', languageAria: 'Switch to English',
-    log: '记录', flight: '宇宙', section: '题目', outcome: '结果', unknown: '未知', final: '已定',
-    heroTitle: ['两个人进去。', '只有一个回来。'], heroBody: ['回答六个糟糕选择。', '把传送门发给朋友。', '看看谁能活着回家。'],
-    openPortal: '开启传送门', howItWorks: '怎么玩', noSignup: '无需注册', twoMinutes: '2 分钟', oneSurvivor: '一人幸存',
-    stability: '维度稳定性', unstable: '不稳定',
+    log: '记录', flight: '宇宙', section: '题目', outcome: '结局', unknown: '待开奖', final: '已判',
+    heroTitle: ['两个人进传送门。', '总得有一个先寄。'], heroBody: ['一个双人《瑞克和莫蒂》生存测试。', '选主角、答 10 道送命题，再甩给朋友。', '最后看你俩谁先领盒饭。'],
+    openPortal: '开始送命测试', howItWorks: '到底怎么玩', noSignup: '不用注册', twoMinutes: '两个人玩', oneSurvivor: '大概活一个',
+    stability: '维度稳定性', unstable: '随时要炸',
     process: [
-      { title: ['回答六个', '糟糕选择'], body: '你的选择都会成为证据。' },
-      { title: ['把传送门', '发给朋友'], body: '同一场事故，不同的命运。' },
-      { title: ['看看谁能', '活着回家'], body: '只有一个幸存者。大概。' },
+      { title: ['选主角，再答', '10 道送命题'], body: '别装，选你真会干的。' },
+      { title: ['把挑战', '甩给朋友'], body: '让 TA 答同一套题。' },
+      { title: ['看谁先', '领盒饭'], body: '输的人负责被笑一整年。' },
     ],
-    openedPortal: '打开了传送门。', identify: '确认实验对象。', yourName: '你的名字', enterName: '输入名字', question: '问题', decision: '选择', unlock: '输入名字后才能操作。',
-    transmission: '传送就绪 // 实验对象 01：', inviteTitle: ['传送门还需要', '第二个受害者。'], inviteBody: '把加密事故发给朋友。对方完成六个选择之前，结果将保持封存。', copied: '已复制', copyLink: '复制链接', portalCopied: '传送门已复制', copyChallenge: '复制挑战', demo: '演示结果', awaiting: ['等待', '实验对象 02'],
-    colliding: '正在碰撞两人的选择', calculating: ['正在计算', '谁会被留下……'], portalCalibrating: '传送门校准中',
-    madeIt: '活着回来了。', didNot: '没能回来。', survivor: '幸存者', casualty: '遇难者', grabbed: '你抢走了传送枪。', trusted: '相信了你。', mistake: '那是 TA 犯的第一个错误。',
-    destination: '目的地', statusLocked: '状态 // 已锁定', survivalTime: '存活时间', minutesSeconds: '分钟 // 秒', chaosMatch: '混乱匹配度', alignment: '多元宇宙同步率',
-    challengeAnother: '再挑战一个朋友', resultCopied: '结果已复制', copyResult: '复制结果', rendering: '正在生成卡片', downloaded: '卡片已下载', retryDownload: '重新下载', downloadCard: '下载结果卡', runAgain: '再玩一次',
+    openedPortal: '给你挖了个传送门坑。', identify: '先报上名来。', yourName: '怎么称呼你', enterName: '例如：小雷', chooseHero: '选一个主角替你冒险', question: '送命题', decision: '送命题', unlock: '先留名字、选主角，不然墓碑都不知道刻谁。',
+    transmission: '传送门已就绪 // 一号倒霉蛋：', inviteTitle: ['还差一个', '冤种朋友。'], inviteBody: '把链接甩给朋友，等 TA 答完同一套 10 道题；不想等，也可以现在直接看结果。', copied: '到手了', copyLink: '复制链接', portalCopied: '链接到手', copyChallenge: '复制挑战链接', demo: '直接看结果', awaiting: ['等待二号', '倒霉蛋'],
+    colliding: '正在对比你俩的人性下限', calculating: ['多元宇宙正在决定', '谁先领盒饭……'], portalCalibrating: '传送门正在憋大招',
+    madeIt: '苟回来了。', didNot: '先寄了。', survivor: '命硬', casualty: '已寄', grabbed: '你抢到了传送枪。', trusted: '居然信了你。', mistake: '这就是 TA 本局最大的失误。',
+    destination: '出事地点', statusLocked: '结局 // 已锁死', survivalTime: '苟活时间', minutesSeconds: '分钟 // 秒', chaosMatch: '塑料友情指数', alignment: '友情越高 // 死得越齐',
+    challengeAnother: '再坑一个朋友', resultCopied: '判决已复制', copyResult: '复制判决', rendering: '正在做死亡证明', downloaded: '死亡证明已保存', retryDownload: '再存一次', downloadCard: '保存死亡证明', runAgain: '重新送一次',
   },
 } as const
 
@@ -122,6 +161,15 @@ function hashText(value: string) {
   return Math.abs(hash >>> 0)
 }
 
+function pickQuestionIds() {
+  const ids = questionSets.en.map((_, index) => index)
+  for (let index = ids.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1))
+    ;[ids[index], ids[swapIndex]] = [ids[swapIndex], ids[index]]
+  }
+  return ids.slice(0, QUESTION_COUNT)
+}
+
 function encodeChallenge(value: Challenge) {
   const bytes = new TextEncoder().encode(JSON.stringify(value))
   let binary = ''
@@ -136,8 +184,9 @@ function decodeChallenge(value: string | null): Challenge | null {
     const binary = atob(normalized)
     const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0))
     const parsed = JSON.parse(new TextDecoder().decode(bytes)) as Challenge
-    if (!parsed.name || parsed.answers.length !== 6) return null
+    if (!parsed.name || !Array.isArray(parsed.answers) || parsed.answers.length < 6 || parsed.answers.length > QUESTION_COUNT) return null
     if (parsed.language && parsed.language !== 'en' && parsed.language !== 'zh') return null
+    if (parsed.questionIds && (parsed.questionIds.length !== parsed.answers.length || new Set(parsed.questionIds).size !== parsed.questionIds.length || parsed.questionIds.some((id) => !Number.isInteger(id) || id < 0 || id >= questionSets.en.length))) return null
     return parsed
   } catch {
     return null
@@ -194,7 +243,7 @@ function SideRail({ incident, outcome, t }: { incident: string; outcome: string;
       <dl>
         <dt>{t.log}</dt><dd>7713.8</dd>
         <dt>{t.flight}</dt><dd>R&amp;M-C137</dd>
-        <dt>{t.section}</dt><dd>6/6</dd>
+        <dt>{t.section}</dt><dd>{QUESTION_COUNT}/{QUESTION_COUNT}</dd>
         <dt>{t.outcome}</dt><dd>{outcome}</dd>
       </dl>
     </aside>
@@ -225,18 +274,20 @@ function Home({ onStart, t }: { onStart: () => void; t: Copy }) {
   )
 }
 
-function Quiz({ challenger, onComplete, language, t }: { challenger: Challenge | null; onComplete: (name: string, answers: number[]) => void; language: Language; t: Copy }) {
+function Quiz({ challenger, onComplete, language, t }: { challenger: Challenge | null; onComplete: (name: string, answers: number[], protagonistId: number, questionIds: number[]) => void; language: Language; t: Copy }) {
   const [name, setName] = useState('')
+  const [protagonistId, setProtagonistId] = useState<number | null>(null)
   const [answers, setAnswers] = useState<number[]>([])
   const step = answers.length
-  const questions = questionSets[language]
+  const questionIds = useMemo(() => challenger?.questionIds || (challenger ? Array.from({ length: QUESTION_COUNT }, (_, index) => index) : pickQuestionIds()), [challenger])
+  const questions = questionIds.map((id) => questionSets[language][id])
   const complete = step === questions.length
 
   function choose(answer: number) {
-    if (!name.trim()) return
+    if (!name.trim() || !protagonistId) return
     const next = [...answers, answer]
     setAnswers(next)
-    if (next.length === questions.length) window.setTimeout(() => onComplete(name.trim(), next), 420)
+    if (next.length === questions.length) window.setTimeout(() => onComplete(name.trim(), next, protagonistId, questionIds), 420)
   }
 
   return (
@@ -247,18 +298,29 @@ function Quiz({ challenger, onComplete, language, t }: { challenger: Challenge |
           <label htmlFor="player-name">{t.yourName}</label>
           <input id="player-name" value={name} onChange={(event) => setName(event.target.value.slice(0, 24))} placeholder={t.enterName} autoFocus autoComplete="off" />
         </div>
-        <div className="progress-track" aria-label={`${t.question} ${Math.min(step + 1, 6)} / 6`}>
+        <fieldset className="protagonist-picker">
+          <legend>{t.chooseHero}</legend>
+          <div>
+            {protagonistOptions.map((hero) => (
+              <button type="button" key={hero.id} className={protagonistId === hero.id ? 'selected' : ''} onClick={() => setProtagonistId(hero.id)} aria-pressed={protagonistId === hero.id}>
+                <img src={`https://rickandmortyapi.com/api/character/avatar/${hero.id}.jpeg`} alt="" />
+                <span>{hero.name}</span>
+              </button>
+            ))}
+          </div>
+        </fieldset>
+        <div className="progress-track" style={{ gridTemplateColumns: `repeat(${questions.length}, 1fr)` }} aria-label={`${t.question} ${Math.min(step + 1, questions.length)} / ${questions.length}`}>
           {questions.map((_, index) => <span key={index} className={index < step ? 'done' : index === step ? 'active' : ''}>{String(index + 1).padStart(2, '0')}</span>)}
         </div>
         {!complete && (
           <div className="question-wrap" key={step}>
-            <p className="question-number">{t.decision} {String(step + 1).padStart(2, '0')} / 06</p>
+            <p className="question-number">{t.decision} {String(step + 1).padStart(2, '0')} / {String(questions.length).padStart(2, '0')}</p>
             <h1>{questions[step].prompt}</h1>
             <div className="answer-grid">
-              <button disabled={!name.trim()} onClick={() => choose(0)}><small>A</small><span>{questions[step].left}</span><IconArrow /></button>
-              <button disabled={!name.trim()} onClick={() => choose(1)}><small>B</small><span>{questions[step].right}</span><IconArrow /></button>
+              <button disabled={!name.trim() || !protagonistId} onClick={() => choose(0)}><small>A</small><span>{questions[step].left}</span><IconArrow /></button>
+              <button disabled={!name.trim() || !protagonistId} onClick={() => choose(1)}><small>B</small><span>{questions[step].right}</span><IconArrow /></button>
             </div>
-            {!name.trim() && <p className="name-warning">{t.unlock}</p>}
+            {(!name.trim() || !protagonistId) && <p className="name-warning">{t.unlock}</p>}
           </div>
         )}
       </section>
@@ -382,9 +444,10 @@ async function downloadResultCard(outcome: Outcome, language: Language, t: Copy)
   context.fillText(`${t.chaosMatch.toUpperCase()}  ${outcome.chaosMatch}%`, 74, 1570)
   context.font = language === 'zh' ? '500 34px "Noto Sans SC", sans-serif' : '500 34px "DM Sans", sans-serif'
   context.fillText(t.grabbed, 74, 1690)
-  context.fillText(`${outcome.loserName} ${t.trusted} ${t.mistake}`, 74, 1740)
+  context.fillText(`${outcome.loserName} ${t.trusted}`, 74, 1740)
+  context.fillText(t.mistake, 74, 1790)
   context.font = '800 58px "Barlow Condensed", sans-serif'
-  context.fillText('WHO DIES FIRST?', 74, 1840)
+  context.fillText('WHO DIES FIRST?', 74, 1860)
 
   const blob = await new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((value) => value ? resolve(value) : reject(new Error('Could not render result card')), 'image/png')
@@ -443,9 +506,8 @@ export default function App() {
   async function calculateOutcome(first: Challenge, second: Challenge) {
     setScreen('loading')
     const seed = hashText(`${first.name}${second.name}${first.answers.join('')}${second.answers.join('')}`)
-    const firstId = characterIds[seed % characterIds.length]
-    let secondId = characterIds[(seed * 7 + 3) % characterIds.length]
-    if (secondId === firstId) secondId = characterIds[(characterIds.indexOf(firstId) + 1) % characterIds.length]
+    const firstId = first.protagonistId || characterIds[seed % characterIds.length]
+    const secondId = second.protagonistId || characterIds[(seed * 7 + 3) % characterIds.length]
     let characters = fallbackCharacters
     try {
       const response = await fetch(`https://rickandmortyapi.com/api/character/${firstId},${secondId}`)
@@ -455,21 +517,23 @@ export default function App() {
     } catch {
       characters = fallbackCharacters
     }
+    const firstCharacter = characters.find((character) => character.id === firstId) || fallbackCharacters[0]
+    const secondCharacter = characters.find((character) => character.id === secondId) || fallbackCharacters[1]
 
-    const weights = [2, 4, 3, 5, 2, 4]
+    const weights = [2, 4, 3, 5, 2, 4, 3, 5, 4, 2]
     const score = (answers: number[]) => answers.reduce((sum, answer, index) => sum + (answer ? weights[index] : 6 - weights[index]), 0)
     const firstScore = score(first.answers)
     const secondScore = score(second.answers)
     const firstWins = firstScore === secondScore ? seed % 2 === 0 : firstScore > secondScore
     const sameAnswers = first.answers.filter((answer, index) => answer === second.answers[index]).length
-    const destination = (firstWins ? characters[0] : characters[1]).location?.name || 'Earth (C-137)'
+    const destination = (firstWins ? firstCharacter : secondCharacter).location?.name || 'Earth (C-137)'
     const minutes = String((seed % 43) + 3).padStart(2, '0')
     const seconds = String((Math.floor(seed / 17) % 60)).padStart(2, '0')
     const result: Outcome = {
       winnerName: firstWins ? first.name : second.name,
       loserName: firstWins ? second.name : first.name,
-      winnerCharacter: firstWins ? characters[0] : characters[1],
-      loserCharacter: firstWins ? characters[1] : characters[0],
+      winnerCharacter: firstWins ? firstCharacter : secondCharacter,
+      loserCharacter: firstWins ? secondCharacter : firstCharacter,
       destination,
       survivalTime: `${minutes}:${seconds}`,
       chaosMatch: 52 + sameAnswers * 7,
@@ -481,9 +545,9 @@ export default function App() {
     }, 1700)
   }
 
-  function completeQuiz(name: string, answers: number[]) {
+  function completeQuiz(name: string, answers: number[], protagonistId: number, questionIds: number[]) {
     beep()
-    const entry: Challenge = { name, answers, incident: challenge?.incident || incident, language }
+    const entry: Challenge = { name, answers, incident: challenge?.incident || incident, language, protagonistId, questionIds }
     if (challenge) {
       void calculateOutcome(challenge, entry)
       return
@@ -524,7 +588,7 @@ export default function App() {
   }
 
   const resultText = outcome ? (language === 'zh'
-    ? `${outcome.winnerName} 活着回来了，${outcome.loserName} 没能回来。存活时间：${outcome.survivalTime}，混乱匹配度：${outcome.chaosMatch}%。#WhoDiesFirst`
+    ? `${outcome.winnerName} 苟回来了，${outcome.loserName} 先寄了。苟活 ${outcome.survivalTime}，塑料友情指数 ${outcome.chaosMatch}%。来测测你和朋友谁先死：#WhoDiesFirst`
     : `${outcome.winnerName} made it home. ${outcome.loserName} did not. Survival time: ${outcome.survivalTime}. Chaos match: ${outcome.chaosMatch}%. #WhoDiesFirst`) : ''
 
   return (
@@ -533,7 +597,7 @@ export default function App() {
       <SideRail incident={challenge?.incident || incident} t={t} outcome={screen === 'result' ? t.final : t.unknown} />
       {screen === 'home' && <Home t={t} onStart={() => { beep(); setScreen('quiz') }} />}
       {screen === 'quiz' && <Quiz challenger={challenge} language={language} t={t} onComplete={completeQuiz} />}
-      {screen === 'invite' && creator && <Invite name={creator.name} link={inviteLink} copied={copied} t={t} onCopy={() => void copyText(inviteLink)} onDemo={() => void calculateOutcome(creator, { name: 'Morty', answers: creator.answers.map((answer, index) => index % 2 ? answer : 1 - answer), incident: creator.incident, language })} />}
+      {screen === 'invite' && creator && <Invite name={creator.name} link={inviteLink} copied={copied} t={t} onCopy={() => void copyText(inviteLink)} onDemo={() => void calculateOutcome(creator, { name: 'Morty', answers: creator.answers.map((answer, index) => index % 2 ? answer : 1 - answer), incident: creator.incident, language, protagonistId: creator.protagonistId === 2 ? 1 : 2, questionIds: creator.questionIds })} />}
       {screen === 'loading' && <Loading t={t} />}
       {screen === 'result' && outcome && <Result outcome={outcome} copied={copied} downloadState={downloadState} t={t} onReset={reset} onCopy={() => void copyText(resultText)} onDownload={() => void handleDownload()} />}
     </div>
